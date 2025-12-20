@@ -85,15 +85,12 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get commit messages since last tag or from beginning
-          git log --pretty=format:"- %s (%h)" --reverse > changelog.txt
+          # Get only the latest commit message
+          $latestCommit = git log -1 --pretty=format:"- %s (%h)"
           
-          # Read the changelog content
-          $changelogContent = Get-Content changelog.txt -Raw
-          
-          # Set the changelog as output
+          # Set the latest commit as changelog output
           "changelog<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          $changelogContent | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $latestCommit | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
@@ -105,7 +102,7 @@ jobs:
           tag_name: v${{ steps.get_version.outputs.version }}
           name: Qflow v${{ steps.get_version.outputs.version }}
           body: |
-            ## What's Changed
+            ## Latest Change
             
             ${{ steps.changelog.outputs.changelog }}
             
